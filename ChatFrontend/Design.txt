@@ -1,0 +1,5 @@
+LaunchPad V2
+https://www.figma.com/design/CsqZGDEUtipZ44XRcIunFv/LaunchPad?node-id=1-2&t=G0IQXk2cJhvEyorR-0
+
+AdminPanel LaunchPad V2
+https://www.figma.com/design/CsqZGDEUtipZ44XRcIunFv/LaunchPad?node-id=216-1297&t=AvsPtKmJvdJ7HtU1-0
