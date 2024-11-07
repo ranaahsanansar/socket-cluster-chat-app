@@ -14,7 +14,14 @@ import { useDisclosure } from '@nextui-org/react';
 import AlertError from '@/components/modal/AlertError';
 import AlertSuccess from '@/components/modal/AlertSuccess';
 import { ModalAlertTypesEnum } from '@/constants/enums';
+import * as socketClusterClient from 'socketcluster-client';
 import ReactDOM from 'react-dom';
+
+const socket = socketClusterClient.create({
+  hostname: 'localhost',
+  port: 3000,
+  authToken: 'ok',
+});
 
 const Chat = ({ params }: { params: { id: string } }) => {
   const [groupInfo, setGroupInfo] = useState<GroupInfo>({} as GroupInfo);

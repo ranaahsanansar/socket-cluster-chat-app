@@ -8,6 +8,7 @@ import { User } from './users/entities/user.entity';
 import { ChatsModule } from './chats/chats.module';
 import { GroupEntity } from './chats/entities/group.entity';
 import { MongooseModule } from '@nestjs/mongoose';
+import { GroupMembersEntity } from './chats/entities/group-members.entity';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       username: 'postgres',
       password: 'postgres',
       database: 'chat',
-      entities: [User, GroupEntity],
+      entities: [User, GroupEntity, GroupMembersEntity],
       synchronize: true,
     }),
     MongooseModule.forRoot('mongodb://localhost:27017/socket-cluster'),

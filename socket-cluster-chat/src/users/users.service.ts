@@ -6,6 +6,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { access } from 'fs';
 import { JwtService } from '@nestjs/jwt';
+import { UserPayload } from 'utils/types';
 
 @Injectable()
 export class UsersService {
@@ -40,7 +41,7 @@ export class UsersService {
         throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
       }
 
-      const pyaload = {
+      const pyaload: UserPayload = {
         preferred_username: userObj.username,
       };
       //  create JWT Token

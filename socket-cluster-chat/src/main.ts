@@ -17,10 +17,19 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Socket Cluster Chat')
-    .setDescription('A Chat Application for Socket Cluster')
+    .setDescription('A Chat Application with Socket Cluster')
     .setVersion('1.0')
-    .addTag('cats')
+    .addTag('Sockets')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'access-token',
+    )
     .build();
+
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
   await app.listen(3000);

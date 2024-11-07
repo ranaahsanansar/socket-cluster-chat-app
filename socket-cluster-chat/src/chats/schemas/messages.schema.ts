@@ -4,10 +4,13 @@ import { Document } from 'mongoose';
 @Schema()
 export class Message extends Document {
   @Prop({ type: String })
-  text: string;
+  content: string;
 
   @Prop({ type: String })
   senderName: string;
+
+  @Prop({ type: String })
+  room: string;
 
   @Prop({ type: Date, default: Date.now })
   timestamp: Date;
