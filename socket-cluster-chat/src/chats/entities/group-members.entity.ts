@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { GroupEntity } from './group.entity';
 
-@Entity('group-members')
+@Entity('group_members')
 export class GroupMembersEntity {
   @PrimaryGeneratedColumn('increment')
   id: number;

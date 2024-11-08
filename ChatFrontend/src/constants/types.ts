@@ -1,4 +1,4 @@
-export type GroupCardResponse = { name: 'new22'; group_id: number; is_delete_able: boolean };
+export type GroupCardResponse = { name: string; group_id: number; is_delete_able: boolean };
 
 export type GroupInfo = {
   name: string;

@@ -16,6 +16,8 @@ import AlertSuccess from '@/components/modal/AlertSuccess';
 import { ModalAlertTypesEnum } from '@/constants/enums';
 import * as socketClusterClient from 'socketcluster-client';
 import ReactDOM from 'react-dom';
+import { useRouter } from 'next/navigation';
+import Notification from '@/components/Notification';
 
 const socket = socketClusterClient.create({
   hostname: 'localhost',
@@ -31,6 +33,12 @@ const Chat = ({ params }: { params: { id: string } }) => {
   const [input, setInput] = useState('');
   const [toastMessage, setToastMessage] = React.useState<string>('');
   const messageContainerRef = useRef<any>(null);
+  const router = useRouter();
+
+  const [notification, setNotification] = useState<{ message: string; type: string }>({
+    message: '',
+    type: '',
+  });
 
   const {
     isOpen: isErrorOpen,
@@ -47,6 +55,51 @@ const Chat = ({ params }: { params: { id: string } }) => {
   } = useDisclosure();
 
   useEffect(() => {
+    const loginToSocket = async () => {
+      const token = localStorage.getItem(TOKEN_KEY);
+      try {
+        const response = await socket.invoke('login', { token });
+        console.log('Login Response : ', response);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const joinRoom = async () => {
+      console.log('Ab Call howa');
+
+      const roomChannel = await socket.subscribe(params.id);
+
+      try {
+        for await (const message of roomChannel) {
+          console.log('Message data', message);
+          appendMessageComponent(message);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    const joinNotificationRoom = async () => {
+      const token = localStorage.getItem(TOKEN_KEY); // Retrieve the token (from localStorage or cookies)
+      let userData: any;
+      if (token) {
+        userData = await jwtDecode(token);
+
+        console.log('Notification: ', `${userData.preferred_username}-notification`);
+        const notificationChannel = await socket.subscribe(`${userData.preferred_username}-notification`);
+        try {
+          for await (const message of notificationChannel) {
+            console.log('Notification data', message);
+
+            setNotification({ message: message.message, type: 'success' });
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    };
+
     const loadGroupInfo = async () => {
       console.log('params : ', params);
       await getGroupInfo(params.id)
@@ -69,34 +122,19 @@ const Chat = ({ params }: { params: { id: string } }) => {
         console.log(userName);
       }
     };
-    loadTokenData();
-    loadGroupInfo();
-  }, []);
 
-  useEffect(() => {
-    // Initialize WebSocket connection
-
-    const token = localStorage.getItem(TOKEN_KEY);
-    const socket = new WebSocket(apiRoutes.joinRoom + params.id + '?token=' + token);
-
-    socket.onopen = () => {
-      console.log('Connected to WebSocket server');
-      setWs(socket);
+    const loginAndJoinRoom = async () => {
+      await loadTokenData();
+      await loadGroupInfo();
+      await loginToSocket();
+      joinRoom();
+      joinNotificationRoom();
     };
 
-    socket.onmessage = (event) => {
-      const serverMessage: MessageType = JSON.parse(event.data);
-      console.log('Calling Append ----------');
-
-      console.log('Message', serverMessage);
-      appendMessageComponent(serverMessage);
-      // setMessages((prevMessages) => [...prevMessages, `Server: ${serverMessage}`]);
-    };
-
-    socket.onclose = () => console.log('Disconnected from WebSocket server');
+    loginAndJoinRoom();
 
     return () => {
-      socket.close();
+      socket.unsubscribe(params.id);
     };
   }, []);
 
@@ -125,10 +163,25 @@ const Chat = ({ params }: { params: { id: string } }) => {
     }, 0);
   };
 
-  const sendMessage = () => {
-    if (ws && input.trim()) {
-      ws.send(input);
-
+  const sendMessage = async () => {
+    if (input.trim()) {
+      console.log('Sending Message');
+      const sendingData = {
+        content: input,
+        token: localStorage.getItem(TOKEN_KEY),
+        roomId: params.id,
+      };
+      try {
+        await socket.invoke('sendMessage', sendingData);
+      } catch (error: any) {
+        console.log('Send Message Error ', error.message);
+        setToastMessage(error.message);
+        handleAlertModals(ModalAlertTypesEnum.ERROR);
+        // onErrorClose();
+        setTimeout(() => {
+          router.push('/home');
+        }, 3000);
+      }
       setInput('');
     }
   };
@@ -139,9 +192,20 @@ const Chat = ({ params }: { params: { id: string } }) => {
   return (
     <React.Fragment>
       <div className='max-w-[100%] flex flex-col'>
+        {notification?.message !== '' ? (
+          <Notification
+            message={notification?.message}
+            type={notification?.type}
+            onClose={() => setNotification({ message: '', type: '' })}
+          />
+        ) : (
+          ''
+        )}
+
         {/* Chat Header the name of chat and a button to add member in group */}
         <AlertError isOpen={isErrorOpen} onOpenChange={onErrorOpenChange} message={toastMessage} />
         <AlertSuccess isOpen={isSuccessOpen} onOpenChange={onSuccessOpenChange} message={toastMessage} />
+
         <div className='flex-shrink-0'>
           <div className='chat-header'>
             <div className='flex justify-between border-b border-borderColor p-4'>
@@ -197,5 +261,4 @@ const Chat = ({ params }: { params: { id: string } }) => {
     </React.Fragment>
   );
 };
-
 export default Chat;
