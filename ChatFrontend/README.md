@@ -6,6 +6,11 @@ A real-time chat application built with a Next.js frontend and a GoLang backend.
 ## Developer
 ahsan.dev@gmail.com
 
+## Node Version
+18
+npm i
+npm run dev
+
 ## Deployed Application
 You can access the deployed application [here](#).
 
